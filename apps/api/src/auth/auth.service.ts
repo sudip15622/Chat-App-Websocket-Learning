@@ -20,16 +20,9 @@ export class AuthService {
     return null;
   }
 
-  async validateJwtUser (userId: string) {
-    const user = await this.userService.findOne(userId);
-    if(user) {
-        return {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-        };
-    }
-    return null;
+  async validateJwtUser (email: string) {
+    const user = await this.userService.findOne(email);
+    return user;
   }
 
   async login(user: any) {

@@ -4,8 +4,8 @@ export interface Vehicle {
   status: 'available' | 'booked';
 }
 
-export interface Booking {
-  id: string;
+export interface CreateBookingDto {
+  // id: string;
   vehicleId: string;
 }
 

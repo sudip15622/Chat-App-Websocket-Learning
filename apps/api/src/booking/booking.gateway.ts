@@ -8,13 +8,14 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Namespace, Socket } from 'socket.io';
+import { Vehicle } from 'src/types/types';
 import { VehicleService } from 'src/vehicle/vehicle.service';
 
 @WebSocketGateway(3001, {
   namespace: 'booking',
   cors: {
-    origin: "http://localhost:3000"
-  }
+    origin: 'http://localhost:3000',
+  },
 })
 export class BookingGateway
   implements OnGatewayConnection, OnGatewayDisconnect
@@ -31,7 +32,7 @@ export class BookingGateway
   private connectedClients: Record<string, string>;
 
   handleConnection(client: Socket) {
-    console.log(`Client connected: ${client.id}`);
+    // console.log(`Client connected: ${client.id}`);
 
     // this.connectedClients[client.id] = `User-${client.id}`;
 
@@ -42,7 +43,7 @@ export class BookingGateway
   }
 
   handleDisconnect(client: Socket) {
-    console.log(`Client disconnected: ${client.id}`);
+    // console.log(`Client disconnected: ${client.id}`);
 
     // Clean up
     // delete this.connectedClients[client.id];
@@ -60,41 +61,46 @@ export class BookingGateway
     const roomName = `Room_Vehicle_${vehicleId}`;
     client.join(roomName);
 
-    console.log(`Client - ${client.id} joins Room - ${roomName}`);
+    // console.log(`Client - ${client.id} joins Room - ${roomName}`);
   }
 
-  @SubscribeMessage("bookVehicle") 
-  handleBooking (
-    @MessageBody() vehicleId: string,
-    @ConnectedSocket() client: Socket,
-  ) {
-    console.log(`Client: ${client.id} requested to book vehicle: ${vehicleId}`);
+  // @SubscribeMessage("bookVehicle")
+  // async handleBooking (
+  //   @MessageBody() vehicleId: string,
+  //   @ConnectedSocket() client: Socket,
+  // ) {
+  //   console.log(`Client: ${client.id} requested to book vehicle: ${vehicleId}`);
 
-    const roomName = `Room_Vehicle_${vehicleId}`;
+  //   const roomName = `Room_Vehicle_${vehicleId}`;
 
-    let vehicle = this.vehicleService.findOne(vehicleId);
-    if(vehicle.status === "booked") {
-      client.emit("bookingError", {
-        message: "Vehicle is already booked by another user!",
-      })
-      return false;
-    }
+  //   let vehicle = await this.vehicleService.findOne(vehicleId);
+  //   if(vehicle.status === "booked") {
+  //     client.emit("bookingError", {
+  //       message: "Vehicle is already booked by another user!",
+  //     })
+  //     return false;
+  //   }
 
-    const updatedVehicle = this.vehicleService.updateOne(vehicleId, "booked");
-    // console.log(updatedVehicle);
+  //   const updatedVehicle = await this.vehicleService.bookVehicle(vehicleId);
+  //   // console.log(updatedVehicle);
 
-    this.namespace.to(roomName).emit("vehicleStatusChanged", {
-      message: "Vehicle status updated!",
-      vehicleId: updatedVehicle.id,
-      status: updatedVehicle.status
-    })
+  //   this.namespace.to(roomName).emit("vehicleStatusChanged", {
+  //     message: "Vehicle status updated!",
+  //     vehicleId: updatedVehicle.id,
+  //     status: updatedVehicle.status
+  //   })
 
-    client.emit("bookingSuccess", {
-      message: "Booking successful!",
-    })
-  }
-
-  // notifyBookingStatus (roomName: string, event: string, payload: any) {
-  //   return this.server.to(roomName).emit(event, payload);
+  //   client.emit("bookingSuccess", {
+  //     message: "Booking successful!",
+  //   })
   // }
+
+  broadcastStatusChange(vehicle: Vehicle) {
+    const roomName = `Room_Vehicle_${vehicle.id}`;
+
+    this.namespace.to(roomName).emit('vehicleStatusChanged', {
+      vehicleId: vehicle.id,
+      status: vehicle.status,
+    });
+  }
 }

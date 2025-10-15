@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { io, Socket } from "socket.io-client";
+import { handleBookVehicle } from "@/lib/actions";
 
 interface VehiclePageProps {
   vehicle: {
@@ -22,13 +23,13 @@ const VehiclePage = ({ vehicle }: VehiclePageProps) => {
       newSocket.emit("joinRoom", vehicle.id);
     });
 
-    newSocket.on("bookingError", (data) => {
-      alert(data.message);
-    });
+    // newSocket.on("bookingError", (data) => {
+    //   alert(data.message);
+    // });
 
-    newSocket.on("bookingSuccess", (data) => {
-      alert(data.message);
-    });
+    // newSocket.on("bookingSuccess", (data) => {
+    //   alert(data.message);
+    // });
 
     newSocket.on("vehicleStatusChanged", (data) => {
       setStatus(data.status);
@@ -36,20 +37,28 @@ const VehiclePage = ({ vehicle }: VehiclePageProps) => {
 
     return () => {
       newSocket.off("connect");
-      newSocket.off("bookingError");
-      newSocket.off("bookingSuccess");
+      // newSocket.off("bookingError");
+      // newSocket.off("bookingSuccess");
       newSocket.off("vehicleStatusChanged");
       newSocket.disconnect();
     };
   }, [vehicle.id]);
 
-  const handleBook = () => {
+  const handleBook = async() => {
     if (status === "booked") {
       alert("Already booked by another user!");
     }
 
-    if (socket) {
-      socket.emit("bookVehicle", vehicle.id);
+    try {
+      const response = await handleBookVehicle(vehicle.id);
+      if(response.success) {
+        alert(response.message);
+      } else {
+        alert(response.message)
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong!");
     }
   };
 

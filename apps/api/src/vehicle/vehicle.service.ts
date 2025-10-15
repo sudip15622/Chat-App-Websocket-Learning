@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Vehicle } from 'src/types/types';
 
 @Injectable()
@@ -33,13 +33,17 @@ export class VehicleService {
     return vehicle;
   }
 
-  updateOne(id: string, status: "available" | "booked"): Vehicle {
+  bookVehicle(id: string): Vehicle {
     const vehicle = this.vehicles.find((v) => v.id === id);
     if (!vehicle) {
       throw new NotFoundException('Vehicle not found!');
     }
+    if(vehicle.status === "booked") {
+      throw new ConflictException("This vehicle is already booked!");
+    } 
 
-    vehicle.status = status;
+    vehicle.status = "booked";
+
     return vehicle;
   }
 }
