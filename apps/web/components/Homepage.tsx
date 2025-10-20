@@ -1,19 +1,18 @@
 "use client";
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 
 interface Vehicle {
-    id: string;
-    name: string;
-    status: string;
+  id: string;
+  name: string;
+  status: string;
 }
 
 interface HomepageProps {
-    vehicles: Vehicle[]
+  vehicles: Vehicle[];
 }
 
-const Homepage = ({vehicles}: HomepageProps) => {
-    
+const Homepage = ({ vehicles }: HomepageProps) => {
   return (
     <div className="w-full max-w-5xl mx-auto mt-20">
       <h2 className="text-2xl font-semibold">All Vehicles</h2>
@@ -25,7 +24,11 @@ const Homepage = ({vehicles}: HomepageProps) => {
               className="p-4 flex flex-1 flex-col gap-y-10 rounded-2xl shadow-lg"
             >
               <div className="text-lg font-semibold">{vehicle.name}</div>
-              <div className="w-fit px-2 py-1 text-xs bg-green-500 text-white rounded-2xl">
+              <div
+                className={`w-fit px-2 py-1 text-xs text-white rounded-2xl ${
+                  vehicle.status === "available" ? "bg-green-500" : "bg-red-500"
+                }`}
+              >
                 {vehicle.status}
               </div>
               <Link

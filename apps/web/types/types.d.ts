@@ -1,3 +1,5 @@
+import { JWTPayload } from "jose";
+
 export interface Vehicle {
   id: string;
   name: string;
@@ -14,6 +16,6 @@ export interface CustomFormState {
   message: string;
 }
 
-export interface SessionPayload {
+export interface SessionPayload extends JWTPayload {
   access_token: string;
 }

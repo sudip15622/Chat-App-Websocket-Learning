@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { io, Socket } from "socket.io-client";
 import { handleBookVehicle } from "@/lib/actions";
+import { SessionPayload } from "@/types/types";
 
 interface VehiclePageProps {
   vehicle: {
@@ -10,14 +11,19 @@ interface VehiclePageProps {
     name: string;
     status: string;
   };
+  session: SessionPayload | null;
 }
 
-const VehiclePage = ({ vehicle }: VehiclePageProps) => {
+const VehiclePage = ({ vehicle, session }: VehiclePageProps) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [status, setStatus] = useState<string>(vehicle.status);
 
   useEffect(() => {
-    const newSocket = io("http://localhost:3001/booking");
+    const newSocket = io("http://localhost:3001/booking", {
+      auth: {
+        token: session?.access_token,
+      }
+    });
     setSocket(newSocket);
     newSocket.on("connect", () => {
       newSocket.emit("joinRoom", vehicle.id);

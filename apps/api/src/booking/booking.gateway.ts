@@ -1,3 +1,4 @@
+import { UseGuards } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -8,6 +9,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Namespace, Socket } from 'socket.io';
+import { WsJwtGuard } from 'src/auth/guards/ws-jwt-auth.guard';
 import { Vehicle } from 'src/types/types';
 import { VehicleService } from 'src/vehicle/vehicle.service';
 
@@ -53,6 +55,7 @@ export class BookingGateway
     // );
   }
 
+  @UseGuards(WsJwtGuard)
   @SubscribeMessage('joinRoom')
   handleJoinRoom(
     @MessageBody() vehicleId: string,

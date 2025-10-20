@@ -1,3 +1,4 @@
+"use server"
 import { CustomFormState, LoginFormData } from "@/types/types";
 import { createSession, getSession } from "./session";
 
@@ -56,7 +57,7 @@ export async function handleBookVehicle (vehicleId: string): Promise<CustomFormS
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${session}`
+                "Authorization": `Bearer ${session.access_token}`
             },
             body: JSON.stringify({
                 vehicleId: vehicleId

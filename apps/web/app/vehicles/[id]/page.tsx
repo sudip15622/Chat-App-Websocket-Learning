@@ -1,5 +1,6 @@
 // "use client"
 import VehiclePage from "@/components/VehiclePage";
+import { getSession } from "@/lib/session";
 import React from "react";
 
 interface PageProps {
@@ -9,6 +10,8 @@ interface PageProps {
 }
 
 const page = async ({ params }: PageProps) => {
+
+  const session = await getSession();
   const { id } = await params;
 
   const response = await fetch (`http://localhost:4000/vehicle/${id}`);
@@ -26,7 +29,7 @@ const page = async ({ params }: PageProps) => {
   const vehicle = await response.json();
   return (
     <>
-      <VehiclePage vehicle={vehicle}/>
+      <VehiclePage vehicle={vehicle} session={session}/>
     </>
   );
 };
