@@ -21,46 +21,40 @@ const VehiclePage = ({ vehicle, session }: VehiclePageProps) => {
   useEffect(() => {
     const newSocket = io("http://localhost:3001/booking", {
       auth: {
-        token: session?.access_token,
-      }
+        token: session?.access_token ? session.access_token : "hellohowareyour",
+      },
     });
     setSocket(newSocket);
     newSocket.on("connect", () => {
       newSocket.emit("joinRoom", vehicle.id);
     });
 
-    // newSocket.on("bookingError", (data) => {
-    //   alert(data.message);
-    // });
-
-    // newSocket.on("bookingSuccess", (data) => {
-    //   alert(data.message);
-    // });
-
     newSocket.on("vehicleStatusChanged", (data) => {
       setStatus(data.status);
     });
 
+    newSocket.on("connect_error", (err) => {
+      alert("Socket connection failed: " + err.message);
+    });
+
     return () => {
       newSocket.off("connect");
-      // newSocket.off("bookingError");
-      // newSocket.off("bookingSuccess");
       newSocket.off("vehicleStatusChanged");
       newSocket.disconnect();
     };
   }, [vehicle.id]);
 
-  const handleBook = async() => {
+  const handleBook = async () => {
     if (status === "booked") {
       alert("Already booked by another user!");
     }
 
     try {
       const response = await handleBookVehicle(vehicle.id);
-      if(response.success) {
+      if (response.success) {
         alert(response.message);
       } else {
-        alert(response.message)
+        alert(response.message);
       }
     } catch (error) {
       console.error(error);

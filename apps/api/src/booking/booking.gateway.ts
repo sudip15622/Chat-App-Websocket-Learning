@@ -1,9 +1,11 @@
-import { UseGuards } from '@nestjs/common';
+import { Inject, UseGuards } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import {
   ConnectedSocket,
   MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
@@ -20,12 +22,36 @@ import { VehicleService } from 'src/vehicle/vehicle.service';
   },
 })
 export class BookingGateway
-  implements OnGatewayConnection, OnGatewayDisconnect
-{
-  constructor(private readonly vehicleService: VehicleService) {}
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+{ 
+  constructor(
+    private readonly vehicleService: VehicleService,
+    private jwtService: JwtService,
+  ) {}
 
   @WebSocketServer()
   namespace: Namespace;
+
+  afterInit() {
+    this.namespace.use(async(socket, next) => {
+      const token = socket.handshake.auth.token;
+
+      if(!token) {
+        return next(new Error("Authentication token missing!"));
+      }
+
+      try {
+        const payload = await this.jwtService.verifyAsync(token);
+        console.log(payload);
+        // console.log(payload);
+        (socket as any).user = payload
+        next();
+      } catch (error) {
+        console.log('Invalid token!');
+        next(new Error('Invalid token!'));
+      }
+    })
+  }
 
   // getServer() {
   //   return this.namespace.server;
@@ -33,26 +59,13 @@ export class BookingGateway
 
   private connectedClients: Record<string, string>;
 
+  @UseGuards(WsJwtGuard)
   handleConnection(client: Socket) {
-    // console.log(`Client connected: ${client.id}`);
-
-    // this.connectedClients[client.id] = `User-${client.id}`;
-
-    // console.log(
-    //   'Connected Clients:',
-    //   Object.keys(this.connectedClients).length,
-    // );
+    console.log(`Client connected: ${client.id}`);
   }
 
   handleDisconnect(client: Socket) {
-    // console.log(`Client disconnected: ${client.id}`);
-
-    // Clean up
-    // delete this.connectedClients[client.id];
-    // console.log(
-    //   'Remaining Clients:',
-    //   Object.keys(this.connectedClients).length,
-    // );
+    console.log(`Client disconnected: ${client.id}`);
   }
 
   @UseGuards(WsJwtGuard)
@@ -63,40 +76,7 @@ export class BookingGateway
   ) {
     const roomName = `Room_Vehicle_${vehicleId}`;
     client.join(roomName);
-
-    // console.log(`Client - ${client.id} joins Room - ${roomName}`);
   }
-
-  // @SubscribeMessage("bookVehicle")
-  // async handleBooking (
-  //   @MessageBody() vehicleId: string,
-  //   @ConnectedSocket() client: Socket,
-  // ) {
-  //   console.log(`Client: ${client.id} requested to book vehicle: ${vehicleId}`);
-
-  //   const roomName = `Room_Vehicle_${vehicleId}`;
-
-  //   let vehicle = await this.vehicleService.findOne(vehicleId);
-  //   if(vehicle.status === "booked") {
-  //     client.emit("bookingError", {
-  //       message: "Vehicle is already booked by another user!",
-  //     })
-  //     return false;
-  //   }
-
-  //   const updatedVehicle = await this.vehicleService.bookVehicle(vehicleId);
-  //   // console.log(updatedVehicle);
-
-  //   this.namespace.to(roomName).emit("vehicleStatusChanged", {
-  //     message: "Vehicle status updated!",
-  //     vehicleId: updatedVehicle.id,
-  //     status: updatedVehicle.status
-  //   })
-
-  //   client.emit("bookingSuccess", {
-  //     message: "Booking successful!",
-  //   })
-  // }
 
   broadcastStatusChange(vehicle: Vehicle) {
     const roomName = `Room_Vehicle_${vehicle.id}`;

@@ -1,6 +1,7 @@
 "use server"
 import { CustomFormState, LoginFormData } from "@/types/types";
-import { createSession, getSession } from "./session";
+import { createSession, deleteSession, getSession } from "./session";
+import { redirect } from "next/navigation";
 
 export async function handleLogin (formData: LoginFormData): Promise<CustomFormState> {
     try {
@@ -97,4 +98,9 @@ export async function handleBookVehicle (vehicleId: string): Promise<CustomFormS
             message: "Failed to book vehicle!",
         }
     }
+}
+ 
+export async function logout() {
+  await deleteSession()
+//   redirect('/login')
 }

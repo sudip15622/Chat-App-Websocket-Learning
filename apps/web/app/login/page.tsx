@@ -47,7 +47,7 @@ const page = () => {
     <main className="w-full max-w-sm mt-20 mx-auto flex flex-col p-10 shadow-2xl rounded-2xl">
       <Link
         href={"/"}
-        className="flex justify-center gap-x-2 items-center p-2 bg-primary text-primary-foreground rounded-xl w-fit mx-auto text-2xl mb-2"
+        className="flex justify-center items-center p-2 bg-primary text-primary-foreground rounded-xl w-fit mx-auto text-2xl mb-2"
       >
         <GiMagicHat />
       </Link>
